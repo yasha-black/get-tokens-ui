@@ -13,32 +13,29 @@ function App() {
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
 
+  const request = () => {
+    axios
+      .get(baseApi + address)
+      .then(({ data }) => {
+        if (data.message === waitError && data.success === false) {
+          return;
+        }
+        setTrxUrl(data.txId);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (err.response?.data?.message) {
+          setError(err.response?.data?.message);
+          setIsLoading(false);
+        }
+      });
+  };
+
   useInterval(() => {
     if (isLoading) {
-      axios
-        .get(baseApi + address)
-        .then(({ data }) => {
-          if (!data.txId && data.success === false) {
-            return;
-          }
-          setTrxUrl(data.txId);
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          if (
-            err.response?.data?.message === waitError &&
-            err.response?.data?.success === false
-          ) {
-            return;
-          }
-
-          if (err.response?.data?.message) {
-            setError(err.response?.data?.message);
-            setIsLoading(false);
-          }
-        });
+      request();
     }
-  }, 3 * 1000);
+  }, 60 * 1000);
 
   function handleClick() {
     if (!address) {
@@ -47,6 +44,7 @@ function App() {
     }
 
     setIsLoading(true);
+    request();
   }
 
   return (
@@ -86,6 +84,7 @@ function App() {
       {isLoading && (
         <div className="message">
           Please wait, you will receive your tokens soon. Do not close the page.
+          (May take 10-15 minutes)
         </div>
       )}
       {!isLoading && trxUrl && (
