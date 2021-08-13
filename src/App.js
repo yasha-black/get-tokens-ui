@@ -5,19 +5,29 @@ import axios from "axios";
 import { useInterval } from "./hooks/useInterval";
 import ReCAPTCHA from "react-google-recaptcha";
 
-const baseApi = "https://gettoken.ergopool.io/dexToken/address/";
+const baseApi = "https://gettoken.ergopool.io/getDexToken";
 const waitError = "please wait and try later";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
-  const [isCaptcha, setIsCaptcha] = useState(false);
+  const [captchaData, setCaptchaData] = useState(null);
   const [trxUrl, setTrxUrl] = useState(false);
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
 
   const request = () => {
+    if (!address) {
+      setError("Type address");
+      return;
+    }
+
+    if (!captchaData) {
+      setError("Captcha first!");
+      return;
+    }
+
     axios
-      .get(baseApi + address)
+      .post(baseApi, { address, challenge: captchaData })
       .then(({ data }) => {
         if (data.message === waitError && data.success === false) {
           return;
@@ -40,17 +50,12 @@ function App() {
   }, 60 * 1000);
 
   function handleClick() {
-    if (!address) {
-      setError("Type address");
-      return;
-    }
-
     setIsLoading(true);
     request();
   }
 
-  function onChange() {
-    setIsCaptcha(true);
+  function onChange(val) {
+    setCaptchaData(val);
   }
 
   return (
@@ -74,7 +79,7 @@ function App() {
         <button
           className="main-button"
           onClick={handleClick}
-          disabled={!isCaptcha || isLoading}
+          disabled={!captchaData || isLoading}
         >
           {isLoading ? (
             <span className="loading">
