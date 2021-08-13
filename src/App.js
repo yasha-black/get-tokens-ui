@@ -3,12 +3,14 @@ import "./App.css";
 import { useState } from "react";
 import axios from "axios";
 import { useInterval } from "./hooks/useInterval";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const baseApi = "https://gettoken.ergopool.io/dexToken/address/";
 const waitError = "please wait and try later";
 
 function App() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isCaptcha, setIsCaptcha] = useState(false);
   const [trxUrl, setTrxUrl] = useState(false);
   const [address, setAddress] = useState("");
   const [error, setError] = useState("");
@@ -47,6 +49,10 @@ function App() {
     request();
   }
 
+  function onChange() {
+    setIsCaptcha(true);
+  }
+
   return (
     <div className="container">
       <div className="main-input-container">
@@ -68,7 +74,7 @@ function App() {
         <button
           className="main-button"
           onClick={handleClick}
-          disabled={isLoading}
+          disabled={!isCaptcha || isLoading}
         >
           {isLoading ? (
             <span className="loading">
@@ -100,8 +106,18 @@ function App() {
           </a>
         </div>
       )}
+      <div>
+        <ReCAPTCHA
+          sitekey="6LcjdvobAAAAAMe260RL3V0mVHZEALh_eELvw1uW"
+          theme="dark"
+          onChange={onChange}
+        />
+      </div>
     </div>
   );
 }
 
 export default App;
+
+// 6LcjdvobAAAAAMe260RL3V0mVHZEALh_eELvw1uW
+// 6LcjdvobAAAAAEAIiGQL4T0oZ9Vb1QJS1Hd20Pwm
